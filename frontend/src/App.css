@@ -2,7 +2,8 @@
 .workspace {
   flex: 1;
   display: flex;
-  height: calc(100vh - 60px); /* Adjust 60px to your TopBar height */
+  height: calc(100vh - 60px);
+  /* Adjust 60px to your TopBar height */
   overflow: hidden;
 }
 
@@ -20,7 +21,7 @@
 .board {
   background-color: white;
   border-radius: 20px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   /* The canvas element inside will be sized via JS */
 }
 

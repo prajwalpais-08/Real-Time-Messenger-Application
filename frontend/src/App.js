@@ -26,11 +26,11 @@ function App() {
       <div className="join-container">
         <form onSubmit={handleJoin} className="join-box">
           <h2>Join Whiteboard</h2>
-          <input 
+          <input
             autoFocus
-            placeholder="Enter your name..." 
-            value={tempName} 
-            onChange={(e) => setTempName(e.target.value)} 
+            placeholder="Enter your name..."
+            value={tempName}
+            onChange={(e) => setTempName(e.target.value)}
           />
           <button type="submit">Join</button>
         </form>

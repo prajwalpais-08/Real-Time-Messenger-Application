@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"Real-Time-Messenger-Application-/chatbot"
 )
 
 var upgrader = websocket.Upgrader{
@@ -27,16 +29,17 @@ var hub = Hub{
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("Upgrade error: %v", err)
+		log.Println(err)
 		return
 	}
+
 	defer conn.Close()
 
 	hub.mutex.Lock()
 	hub.clients[conn] = true
 	hub.mutex.Unlock()
 
-	fmt.Println("User Connected! Total users:", len(hub.clients))
+	fmt.Println("User connected")
 
 	for {
 		_, msg, err := conn.ReadMessage()
@@ -44,12 +47,27 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			hub.mutex.Lock()
 			delete(hub.clients, conn)
 			hub.mutex.Unlock()
-			fmt.Println("User Disconnected")
+			fmt.Println("User disconnected")
 			break
 		}
-		// Log what the server received
-		fmt.Printf("Received: %s\n", string(msg))
-		hub.broadcast <- msg
+		var request map[string]string
+		err = json.Unmarshal(msg, &request)
+		if err == nil && request["type"] == "bot" {
+			apiKey := request["apiKey"]
+			prompt := request["prompt"]
+			reply, err := chatbot.AskGemini(prompt, apiKey)
+			if err != nil {
+				reply = "AI request failed."
+			}
+			response := map[string]string{
+				"type": "bot",
+				"text": reply,
+			}
+			jsonResponse, _ := json.Marshal(response)
+			conn.WriteMessage(websocket.TextMessage, jsonResponse)
+		} else {
+			hub.broadcast <- msg
+		}
 	}
 }
 
