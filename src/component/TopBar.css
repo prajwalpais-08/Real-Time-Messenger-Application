@@ -1,0 +1,24 @@
+.topbar{
+  height:60px;
+  background:linear-gradient(180deg,#f7f7f7,#e6e6e6);
+  border-bottom:1px solid #ccc;
+  display:flex;
+  align-items:center;
+  padding:0 20px;
+  justify-content:space-between;
+}
+
+.topbar h2{
+  margin:0;
+  font-size:18px;
+}
+
+.controls button{
+  margin-left:10px;
+  padding:6px 10px;
+  border:none;
+  background:white;
+  border-radius:6px;
+  cursor:pointer;
+  box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
