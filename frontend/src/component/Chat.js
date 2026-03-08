@@ -56,57 +56,33 @@ const Chat = ({ socket, username }) => {
   };
 
   return (
-    <div className="chat-panel">
-      <div style={{ 
-        padding: '10px', 
-        borderBottom: '1px solid #ddd', 
-        fontWeight: 'bold',
-        backgroundColor: '#f8f9fa' 
-      }}>
-        Live Chat ({username})
+    /* ... inside Chat.js return ... */
+<div className="chat-panel">
+  <div className="chat-header">
+    Group Chat
+  </div>
+  
+  <div className="messages-list">
+    {messages.map((m, i) => (
+      <div key={i} className={`message-wrapper ${m.sender === username ? "self" : "other"}`}>
+        <div className="message-bubble">
+          <span className="message-sender">{m.sender}</span>
+          <p className="message-text">{m.text}</p>
+        </div>
       </div>
-      
-      <div className="messages-list">
-        {messages.map((m, i) => (
-          <div key={i} className={`message ${m.sender === username ? "self" : "other"}`}>
-            <div style={{ fontSize: '10px', opacity: 0.8, marginBottom: '2px' }}>
-              {m.sender}
-            </div>
-            <div>{m.text}</div>
-          </div>
-        ))}
-        {/* Helper div for scrolling */}
-        <div ref={scrollRef} />
-      </div>
+    ))}
+    <div ref={scrollRef} />
+  </div>
 
-      <form onSubmit={sendMessage} style={{ padding: '10px', display: 'flex', gap: '5px' }}>
-        <input 
-          style={{ 
-            flex: 1, 
-            padding: '10px', 
-            border: '1px solid #ddd', 
-            borderRadius: '4px',
-            outline: 'none'
-          }}
-          value={input} 
-          onChange={(e) => setInput(e.target.value)} 
-          placeholder="Type a message..." 
-        />
-        <button 
-          type="submit" 
-          style={{ 
-            padding: '8px 15px', 
-            cursor: 'pointer',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px'
-          }}
-        >
-          Send
-        </button>
-      </form>
-    </div>
+  <form onSubmit={sendMessage} className="chat-input-container">
+    <input 
+      value={input} 
+      onChange={(e) => setInput(e.target.value)} 
+      placeholder="Type a message..." 
+    />
+    <button type="submit">Send</button>
+  </form>
+</div>
   );
 };
 

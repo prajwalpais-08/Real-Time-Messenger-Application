@@ -1,83 +1,144 @@
 import React, { useEffect, useRef, useState } from "react";
-import "./Canvas.css";
 
-function Canvas({ socket }) {
+function Canvas({ socket, tool, color }) {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyStep, setHistoryStep] = useState(-1);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    // Set canvas size based on its container
-    canvas.width = canvas.parentElement.offsetWidth;
-    canvas.height = canvas.parentElement.offsetHeight;
+    const resize = () => {
+      const parent = canvas.parentElement;
+      canvas.width = parent.clientWidth;
+      canvas.height = parent.clientHeight;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      if (historyStep >= 0) {
+        const img = new Image();
+        img.src = history[historyStep];
+        img.onload = () => ctx.drawImage(img, 0, 0);
+      }
+    };
 
-    ctx.lineCap = "round";
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "#000000";
+    window.addEventListener("resize", resize);
+    resize();
+    saveHistory();
 
-    if (!socket) return;
-
-    const handleSocketMessage = (event) => {
-      const data = JSON.parse(event.data);
+    const handleMsg = (e) => {
+      const data = JSON.parse(e.data);
       if (data.type === "draw") {
+        ctx.strokeStyle = data.color;
+        ctx.lineWidth = data.width;
         ctx.lineTo(data.x, data.y);
         ctx.stroke();
         ctx.beginPath();
         ctx.moveTo(data.x, data.y);
+      } else if (data.type === "clear") {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } else if (data.type === "text") {
+        ctx.font = "20px Arial";
+        ctx.fillStyle = data.color;
+        ctx.fillText(data.text, data.x, data.y);
       }
     };
 
-    socket.addEventListener("message", handleSocketMessage);
-    return () => socket.removeEventListener("message", handleSocketMessage);
+    socket?.addEventListener("message", handleMsg);
+    return () => {
+      window.removeEventListener("resize", resize);
+      socket?.removeEventListener("message", handleMsg);
+    };
   }, [socket]);
 
-  const startDrawing = (e) => {
-    const { offsetX, offsetY } = e.nativeEvent;
-    setIsDrawing(true);
-    draw(e);
+  const saveHistory = () => {
+    setHistory(prev => {
+      const newHist = prev.slice(0, historyStep + 1);
+      return [...newHist, canvasRef.current.toDataURL()];
+    });
+    setHistoryStep(prev => prev + 1);
   };
 
-  const stopDrawing = () => {
-    setIsDrawing(false);
-    const ctx = canvasRef.current.getContext("2d");
-    ctx.beginPath(); // Reset the path so lines don't connect across the screen
-  };
+  useEffect(() => {
+    if (tool === "undo" && historyStep > 0) {
+      const step = historyStep - 1;
+      const img = new Image();
+      img.src = history[step];
+      img.onload = () => {
+        canvasRef.current.getContext("2d").clearRect(0,0,10000,10000);
+        canvasRef.current.getContext("2d").drawImage(img, 0, 0);
+        setHistoryStep(step);
+      };
+    }
+    if (tool === "delete") {
+      canvasRef.current.getContext("2d").clearRect(0,0,10000,10000);
+      socket?.send(JSON.stringify({type: "clear"}));
+      saveHistory();
+    }
+  }, [tool]);
 
   const draw = (e) => {
-    if (!isDrawing || !socket) return;
-    const { offsetX, offsetY } = e.nativeEvent;
+    if (!isDrawing || tool === "text") return;
     const ctx = canvasRef.current.getContext("2d");
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-    // 1. Draw locally
-    ctx.lineTo(offsetX, offsetY);
+    ctx.strokeStyle = tool === "eraser" ? "#FFFFFF" : color;
+    ctx.lineWidth = tool === "eraser" ? 30 : 5;
+    ctx.lineTo(x, y);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(offsetX, offsetY);
+    ctx.moveTo(x, y);
 
-    // 2. Send to Go Server
-    socket.send(JSON.stringify({
-      type: "draw",
-      x: offsetX,
-      y: offsetY
-    }));
+    socket?.send(JSON.stringify({ type: "draw", x, y, color: ctx.strokeStyle, width: ctx.lineWidth }));
   };
 
-  return (
-    <div className="canvas-area">
-      <div className="board" style={{ width: '100%', height: '100%', background: 'white' }}>
-        <canvas
-          ref={canvasRef}
-          onMouseDown={startDrawing}
-          onMouseUp={stopDrawing}
-          onMouseMove={draw}
-          onMouseOut={stopDrawing}
-          style={{ cursor: 'crosshair', display: 'block' }}
-        />
-      </div>
-    </div>
-  );
-}
+  const handleMouseDown = (e) => {
+    if (tool === "text") {
+      const txt = prompt("Enter text:");
+      if (txt) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const ctx = canvasRef.current.getContext("2d");
+        ctx.font = "20px Arial";
+        ctx.fillStyle = color;
+        ctx.fillText(txt, x, y);
+        socket?.send(JSON.stringify({type: "text", x, y, text: txt, color}));
+        saveHistory();
+      }
+    } else {
+      setIsDrawing(true);
+      draw(e);
+    }
+  };
 
+ return (
+  <div className="canvas-area">
+    <div className="board">
+      <canvas
+        ref={canvasRef}
+        className={`canvas-element ${
+          tool === 'eraser' ? 'cursor-eraser' : 
+          tool === 'text' ? 'cursor-text' : 
+          'cursor-pencil'
+        }`}
+        onMouseDown={handleMouseDown}
+        onMouseMove={draw}
+        onMouseUp={() => { 
+          setIsDrawing(false); 
+          canvasRef.current.getContext("2d").beginPath(); 
+          saveHistory(); 
+        }}
+        onMouseOut={() => { 
+          if(isDrawing) saveHistory(); 
+          setIsDrawing(false); 
+        }}
+      />
+    </div>
+  </div>
+);
+}
 export default Canvas;

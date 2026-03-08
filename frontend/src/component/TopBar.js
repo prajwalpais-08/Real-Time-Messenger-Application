@@ -9,20 +9,6 @@ function TopBar() {
         tutorials<span>point</span>
       </div>
 
-      <div className="board-controls">
-        <button>⏮</button>
-        <button>◀</button>
-
-        <span>Board</span>
-
-        <input type="number" value="1" readOnly />
-
-        <span>of 1</span>
-
-        <button>▶</button>
-        <button>⏭</button>
-      </div>
-
     </div>
   );
 }
