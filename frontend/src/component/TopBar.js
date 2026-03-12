@@ -6,7 +6,7 @@ function TopBar() {
     <div className="topbar">
 
       <div className="logo">
-        tutorials<span>point</span>
+        CollabInk
       </div>
 
     </div>
