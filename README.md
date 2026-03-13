@@ -51,8 +51,7 @@ REAL-TIME-MESSENGER-APPLICATION
 ├── package.json
 └── package-lock.json
 ```
-## Getting Started
 
----
+
 
 
