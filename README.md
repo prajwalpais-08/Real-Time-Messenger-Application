@@ -1,42 +1,58 @@
-# Real-Time Messenger Application
+## Real-Time Messenger Application
 
-This project is a React-based application that provides a collaborative whiteboard-style interface. Users can interact with a canvas, use drawing tools, and navigate boards similar to an online whiteboard system.
+A Real-Time Messaging Application built using React (Frontend) and Go (Backend).
+The application provides a chat interface where users can communicate in real-time with a modern UI including a top bar, side toolbar, and chat canvas.
 
 ## Features
 
-- Interactive whiteboard canvas
+- Real-time messaging interface
 - Sidebar tools for drawing and editing
-- Top navigation bar for board controls
-- Responsive layout using React components
-- Modular component structure
+- Modern chat UI built with React
+- Real-time messaging interface
+- Go backend for handling server logic
 
 
 
 ## Project Structure
 
 ```
-src/
+REAL-TIME-MESSENGER-APPLICATION
 │
-├── components/
-│   ├── Canvas/
-│   │   ├── Canvas.js
-│   │   └── Canvas.css
-│   │
-│   ├── SideToolbar/
-│   │   ├── SideToolbar.js
-│   │   └── SideToolbar.css
-│   │
-│   ├── TopBar/
-│   │   ├── TopBar.js
-│   │   └── TopBar.css
+├── backend
+│   ├── go.mod
+│   ├── go.sum
+│   └── main.go
 │
-├── App.js
-├── App.css
-└── index.js
+├── frontend
+│   ├── node_modules
+│   ├── public
+│   │
+│   └── src
+│       ├── component
+│       │   ├── AIChat.js
+│       │   ├── Canvas.js
+│       │   ├── Canvas.css
+│       │   ├── Chat.js
+│       │   ├── SideToolbar.js
+│       │   ├── SideToolbar.css
+│       │   ├── TopBar.js
+│       │   └── TopBar.css
+│       │
+│       ├── App.js
+│       ├── App.css
+│       ├── App.test.js
+│       ├── index.js
+│       ├── index.css
+│       ├── logo.svg
+│       ├── reportWebVitals.js
+│       └── setupTests.js
+│
+├── .gitignore
+├── package.json
+└── package-lock.json
 ```
 ## Getting Started
 
-### Install dependencies
+---
 
-```bash
-npm install
+
