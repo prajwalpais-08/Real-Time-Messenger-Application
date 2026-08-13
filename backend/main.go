@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"sync"
-	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
